@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e
+
+IPTABLES_FILE="$HOME/setup/iptables.rules"
+PREUP_IPTABLES_FILE=/etc/network/if-pre-up.d/iptables
+
+function updateConfig
+{
+  file="$1"
+  setting="$2"
+  value="${@:3}"
+
+  echo "updating config $file $setting $value"
+  if grep "^#\?$setting" "$file" > /dev/null; then
+    sed -i s/^#\\?"$setting".*/"$setting $value"/g "$file"
+  else
+    echo "$setting $value" >> "$file"
+  fi
+}
+
+if [[ ! "$LC_AUTHORIZED_KEYS" ]]; then
+  echo "missing \$AUTHORIZED_KEYS" >&2
+  exit 1
+fi
+
+mkdir -p "$HOME/.ssh"
+echo "$LC_AUTHORIZED_KEYS" > "$HOME/.ssh/authorized_keys"
+
+updateConfig /etc/ssh/sshd_config PasswordAuthentication no
+
+echo "configuring firewall"
+if [[ ! -f "$PREUP_IPTABLES_FILE" ]]; then
+  echo "#!/bin/sh" > "$PREUP_IPTABLES_FILE"
+fi
+chmod +x "$PREUP_IPTABLES_FILE"
+if ! grep "^iptables-restore < \"$IPTABLES_FILE\"$" "$PREUP_IPTABLES_FILE" > /dev/null; then
+  echo "iptables-restore < \"$IPTABLES_FILE\"" >> "$PREUP_IPTABLES_FILE"
+fi
+iptables-restore < "$IPTABLES_FILE"
+
+apt-get update
+apt-get dist-upgrade -y
+
+reboot
