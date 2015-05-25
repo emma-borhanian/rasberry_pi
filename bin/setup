@@ -61,9 +61,7 @@ else
 fi
 
 for script in "${SCRIPTS[@]}"; do
-  if [[ "$script" == 'weechat' ]]; then
-    runScript setup_weechat
-  elif [[ "$script" == 'initial' ]]; then
+  if [[ "$script" == 'initial' ]]; then
     runScript setup_initial
     for i in {1..10}; do
       if ! nc -z "$HOST" 22 >/dev/null; then
@@ -72,6 +70,8 @@ for script in "${SCRIPTS[@]}"; do
       echo "waiting for server to shutdown"
       sleep 1
     done
+  elif [[ "$script" == 'weechat' ]]; then
+    runScript setup_weechat
   elif [[ "$script" == 'cleanup' ]]; then
     runScript cleanup
   else
