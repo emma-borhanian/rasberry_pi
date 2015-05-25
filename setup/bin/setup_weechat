@@ -3,14 +3,14 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-requireEnv LC_USER_COUNT
+requireEnv USER_COUNT
 
 docker build -t local/weechat "$HOME/setup/docker-weechat"
 
-for ((i=1; i <= LC_USER_COUNT; i++ )); do
-  user_var="LC_USER_$i"
-  weechat_password_var="LC_WEECHAT_PASSWORD_$i"
-  weechat_port_var="LC_WEECHAT_PORT_$i"
+for ((i=1; i <= USER_COUNT; i++ )); do
+  user_var="USER_$i"
+  weechat_password_var="WEECHAT_PASSWORD_$i"
+  weechat_port_var="WEECHAT_PORT_$i"
   requireEnv "$user_var" "$weechat_password_var" "$weechat_port_var"
   user="${!user_var}"
   weechat_password="${!weechat_password_var}"

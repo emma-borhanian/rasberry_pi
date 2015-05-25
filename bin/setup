@@ -30,17 +30,19 @@ rsync -R $(git ls-files setup) "$USER_ROOT@$HOST":.
 
 function runScript
 {
-  run="chmod +x setup/bin/$1 && setup/bin/$1"
   set_env=()
   send_env=()
+  set_env_reverse=()
 
   for var in "${SEND_ENV[@]}"; do
     lc_var="LC_$var"
     set_env+=("$lc_var=${!var}")
+    set_env_reverse+=("$var=\"\$$lc_var\"")
     send_env+=("$lc_var")
   done
 
-  send_env_list="$(IFS=','; echo "${send_env[*]}")"
+  run="chmod +x setup/bin/$1 && $(IFS=' '; echo "${set_env_reverse[*]}") setup/bin/$1"
+  send_env_list=$(IFS=','; echo "${send_env[*]}")
   env "${set_env[@]}" ssh -o SendEnv="$send_env_list" "$USER_ROOT@$HOST" "$run"
 }
 

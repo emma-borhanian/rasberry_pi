@@ -20,10 +20,10 @@ function updateConfig
   fi
 }
 
-requireEnv LC_AUTHORIZED_KEYS_ROOT LC_USER_COUNT
+requireEnv AUTHORIZED_KEYS_ROOT USER_COUNT
 
 mkdir -p "$HOME/.ssh"
-echo "$LC_AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
+echo "$AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
 
 updateConfig /etc/ssh/sshd_config PasswordAuthentication no
 
@@ -40,9 +40,9 @@ iptables-restore < "$IPTABLES_FILE"
 apt-get update
 apt-get dist-upgrade -y
 
-for ((i=1; i <= LC_USER_COUNT; i++ )); do
-  user_var="LC_USER_$i"
-  authorized_keys_var="LC_AUTHORIZED_KEYS_$i"
+for ((i=1; i <= USER_COUNT; i++ )); do
+  user_var="USER_$i"
+  authorized_keys_var="AUTHORIZED_KEYS_$i"
   requireEnv "$user_var" "$authorized_keys_var"
   user="${!user_var}"
   authorized_keys="${!authorized_keys_var}"
