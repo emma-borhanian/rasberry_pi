@@ -18,7 +18,7 @@ done
 
 requireEnv "${SEND_ENV[@]}"
 
-if [ "$(git branch | grep '\\*')" != "* master" ] ; then
+if [ "$(git branch | grep "\\*")" != "* master" ] ; then
   read -p 'You are not on master, are you sure you want to deploy? (y/n) ' -r REPLY
   if [ ! "$REPLY" = 'y' ]; then
     exit 1
