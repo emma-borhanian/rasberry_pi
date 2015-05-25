@@ -10,31 +10,69 @@ if [[ -f .env ]]; then
   source .env
 fi
 
-requireEnv USER_ROOT HOST
+source "lib/send_env"
 
 PORT_ID_XPATH="/nmaprun/host/ports/port[./state/@state!='filtered']/@portid"
 
-user_ports=()
-for ((i=1; i <= USER_COUNT; i++ )); do
-  weechat_port_var="WEECHAT_PORT_$i"
-  requireEnv "$weechat_port_var"
-  user_ports+=("${!weechat_port_var}")
-done
+function testPorts
+{
+  user_ports=()
+  for ((i=1; i <= USER_COUNT; i++ )); do
+    weechat_port_var="WEECHAT_PORT_$i"
+    requireEnv "$weechat_port_var"
+    user_ports+=("${!weechat_port_var}")
+  done
 
-echo "checking open ports..."
-open_ports=($(nmap "$HOST" -Pn -oX - | xpath -q -e "$PORT_ID_XPATH"))
+  echo "checking open ports..."
+  open_ports=($(nmap "$HOST" -Pn -oX - | xpath -q -e "$PORT_ID_XPATH"))
 
-# weechat ports
-user_ports_list=$(IFS=','; echo "${user_ports[*]}")
-open_ports+=($(nmap "$HOST" -Pn -oX - -p "8000-8010" | xpath -q -e "$PORT_ID_XPATH"))
-open_ports+=($(nmap "$HOST" -Pn -oX - -p "$user_ports_list" | xpath -q -e "$PORT_ID_XPATH"))
+  # weechat ports
+  user_ports_list=$(IFS=','; echo "${user_ports[*]}")
+  open_ports+=($(nmap "$HOST" -Pn -oX - -p "8000-8010" | xpath -q -e "$PORT_ID_XPATH"))
+  open_ports+=($(nmap "$HOST" -Pn -oX - -p "$user_ports_list" | xpath -q -e "$PORT_ID_XPATH"))
 
-# change output from portid="22" to just 22
-open_ports=($(sed -E s/portid=\|\"//g <<< "${open_ports[*]}"))
+  # change output from portid="22" to just 22
+  open_ports=($(sed -E s/portid=\|\"//g <<< "${open_ports[*]}"))
 
-if [[ "${open_ports[*]}" != "22" ]]; then
-  echo "FAIL: too many ports not filtered by firewall: ${open_ports[*]}"
-  exit 1
+  if [[ "${open_ports[*]}" != "22" ]]; then
+    echo "FAIL: too many ports not filtered by firewall: ${open_ports[*]}"
+    exit 1
+  else
+    echo "PASS: only port 22 open"
+  fi
+}
+
+function testAuthenticationMethods
+{
+  authentication_methods=$(\
+    ssh -vvv root@192.168.1.115 exit 2>&1 | \
+    tr -d '\r' | \
+    grep "Authentications that can continue" | \
+    sed "s/.*Authentications that can continue: //g" | \
+    sort -u)
+  if [[ "$authentication_methods" != "publickey" ]]; then
+    echo "FAIL: authentication methods should only be publickey, was: $authentication_methods"
+    exit 1
+  else
+    echo "PASS: only authentication method is publickey"
+  fi
+}
+
+rsyncFiles
+
+if [[ "$#" -eq 0 ]]; then
+  SCRIPTS=(initial)
 else
-  echo "PASS: only port 22 open"
+  SCRIPTS=("$@")
 fi
+
+for script in "${SCRIPTS[@]}"; do
+  if [[ "$script" == 'initial' ]]; then
+    testPorts
+    testAuthenticationMethods
+    runScript test_initial
+  else
+    echo "unknown script $script" >&2
+    exit 1
+  fi
+done

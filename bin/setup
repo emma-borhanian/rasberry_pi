@@ -10,13 +10,7 @@ if [[ -f .env ]]; then
   source .env
 fi
 
-SEND_ENV=(HOST USER_ROOT AUTHORIZED_KEYS_ROOT USER_COUNT)
-
-for ((i=1; i <= USER_COUNT; i++ )); do
-  SEND_ENV+=(USER_$i AUTHORIZED_KEYS_$i WEECHAT_PASSWORD_$i WEECHAT_PORT_$i)
-done
-
-requireEnv "${SEND_ENV[@]}"
+source "lib/send_env"
 
 if [ "$(git branch | grep "\\*")" != "* master" ] ; then
   read -p 'You are not on master, are you sure you want to deploy? (y/n) ' -r REPLY
@@ -25,27 +19,6 @@ if [ "$(git branch | grep "\\*")" != "* master" ] ; then
   fi
 fi
 
-echo "syncing files"
-rsync -R $(git ls-files setup) "$USER_ROOT@$HOST":.
-
-function runScript
-{
-  set_env=()
-  send_env=()
-  set_env_reverse=()
-
-  for var in "${SEND_ENV[@]}"; do
-    lc_var="LC_$var"
-    set_env+=("$lc_var=${!var}")
-    set_env_reverse+=("$var=\"\$$lc_var\"")
-    send_env+=("$lc_var")
-  done
-
-  run="chmod +x setup/bin/$1 && $(IFS=' '; echo "${set_env_reverse[*]}") setup/bin/$1"
-  send_env_list=$(IFS=','; echo "${send_env[*]}")
-  env "${set_env[@]}" ssh -o SendEnv="$send_env_list" "$USER_ROOT@$HOST" "$run"
-}
-
 function waitForServer
 {
   while ! nc -z "$HOST" 22 >/dev/null; do
@@ -53,6 +26,8 @@ function waitForServer
     echo "waiting for server to reboot..."
   done
 }
+
+rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
   SCRIPTS=(initial weechat cleanup)
