@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+source "$HOME/setup/lib/bash_include"
+
+requireEnv USER_COUNT
+
+for ((i=1; i <= USER_COUNT; i++ )); do
+  user_var="USER_$i"
+  weechat_port_var="WEECHAT_PORT_$i"
+  requireEnv "$user_var" "$weechat_port_var"
+  user="${!user_var}"
+  weechat_port="${!weechat_port_var}"
+
+  user_home=$(homeDir "$user")
+
+  container_name="${user}_weechat"
+
+  running=$(docker ps -a -q -f name="$container_name")
+  if [[ ! "$running" ]]; then
+    echo "FAIL: container $container_name not running"
+    exit 1
+  else
+    echo "PASS: container $container_name running"
+  fi
+
+  if ! nc -z localhost "$weechat_port" >/dev/null; then
+    echo "FAIL: not listening on localhost:$weechat_port"
+    exit 1
+  else
+    echo "PASS: listening on localhost:$weechat_port"
+  fi
+done
+

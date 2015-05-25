@@ -1,4 +1,3 @@
-* test weechat setup
 * setup/test firewall rules for user-based restriction to weechat servers
 * harden debian
 * harden weechat

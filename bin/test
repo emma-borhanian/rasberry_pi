@@ -61,7 +61,7 @@ function testAuthenticationMethods
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(initial)
+  SCRIPTS=(initial weechat)
 else
   SCRIPTS=("$@")
 fi
@@ -71,6 +71,8 @@ for script in "${SCRIPTS[@]}"; do
     testPorts
     testAuthenticationMethods
     runScript test_initial
+  elif [[ "$script" == 'weechat' ]]; then
+    runScript test_weechat
   else
     echo "unknown script $script" >&2
     exit 1
