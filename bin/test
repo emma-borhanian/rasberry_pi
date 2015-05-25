@@ -4,7 +4,7 @@ set -e
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$BASEDIR/.."
 
-source "setup/lib/bash_include"
+source "lib/bash_include"
 
 if [[ -f .env ]]; then
   source .env
