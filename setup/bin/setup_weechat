@@ -1,0 +1,47 @@
+#!/bin/bash
+set -e
+
+source "$HOME/setup/lib/bash_include"
+
+requireEnv LC_USER_COUNT
+
+docker build -t local/weechat "$HOME/setup/docker-weechat"
+
+for ((i=1; i <= LC_USER_COUNT; i++ )); do
+  user_var="LC_USER_$i"
+  weechat_password_var="LC_WEECHAT_PASSWORD_$i"
+  weechat_port_var="LC_WEECHAT_PORT_$i"
+  requireEnv "$user_var" "$weechat_password_var" "$weechat_port_var"
+  user="${!user_var}"
+  weechat_password="${!weechat_password_var}"
+  weechat_port="${!weechat_port_var}"
+
+  user_home=$(homeDir "$user")
+
+  container_name="${user}_weechat"
+
+  running=$(docker ps -a -q -f name="$container_name")
+  if [[ "$running" ]]; then
+    echo "stopping container $container_name: $running"
+    docker stop "$container_name" > /dev/null
+  fi
+
+  stopped=$(docker ps -a -q -f status=exited -f name="$container_name")
+  if [[ "$stopped" ]]; then
+    echo "removing container $container_name: $stopped"
+    docker rm "$stopped" > /dev/null
+  fi
+
+  # do things that need weechat stopped here
+
+  echo "starting container $container_name..."
+  started=$(docker run --name "$container_name" -v "$user_home/.weechat:/.weechat" -e "WEECHAT_PASSWORD=$weechat_password" -p "127.0.0.1:$weechat_port:8001" -i -t -d local/weechat)
+
+  if [[ $started ]]; then
+    echo "started $container_name as $started"
+  else
+    echo "failed to start weechat" >&2
+    exit 1
+  fi
+done
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+source "$HOME/setup/lib/bash_include"
+
+# remove stopped containers
+stopped=$(docker ps -a -q -f status=exited)
+if [[ "$stopped" ]]; then
+  echo "removing stopped containers $stopped"
+  docker rm $stopped > /dev/null
+fi
+
+# remove dangling images
+dangling=$(docker images -q -f dangling=true)
+if [[ "$dangling" ]]; then
+  echo "removing dangling images $dangling"
+  docker rmi $dangling > /dev/null
+fi

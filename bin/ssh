@@ -4,15 +4,12 @@ set -e
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$BASEDIR/.."
 
+source "setup/lib/bash_include"
+
 if [[ -f .env ]]; then
   source .env
 fi
 
-SERVER_USER="$(if [[ "$SERVER_USER" ]]; then echo "$SERVER_USER"; else echo "$USER"; fi)"
+requireEnv USER_ROOT HOST
 
-if [[ ! "$HOST" ]]; then
-  echo "missing \$HOST" >&2
-  exit 1
-fi
-
-ssh "$SERVER_USER@$HOST" "$@"
+ssh "$USER_ROOT@$HOST" "$@"

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+source "$HOME/setup/lib/bash_include"
+
 IPTABLES_FILE="$HOME/setup/iptables.rules"
 PREUP_IPTABLES_FILE=/etc/network/if-pre-up.d/iptables
 
@@ -8,7 +10,7 @@ function updateConfig
 {
   file="$1"
   setting="$2"
-  value="${@:3}"
+  value="${*:3}"
 
   echo "updating config $file $setting $value"
   if grep "^#\?$setting" "$file" > /dev/null; then
@@ -18,13 +20,10 @@ function updateConfig
   fi
 }
 
-if [[ ! "$LC_AUTHORIZED_KEYS" ]]; then
-  echo "missing \$AUTHORIZED_KEYS" >&2
-  exit 1
-fi
+requireEnv LC_AUTHORIZED_KEYS_ROOT LC_USER_COUNT
 
 mkdir -p "$HOME/.ssh"
-echo "$LC_AUTHORIZED_KEYS" > "$HOME/.ssh/authorized_keys"
+echo "$LC_AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
 
 updateConfig /etc/ssh/sshd_config PasswordAuthentication no
 
@@ -40,5 +39,24 @@ iptables-restore < "$IPTABLES_FILE"
 
 apt-get update
 apt-get dist-upgrade -y
+
+for ((i=1; i <= LC_USER_COUNT; i++ )); do
+  user_var="LC_USER_$i"
+  authorized_keys_var="LC_AUTHORIZED_KEYS_$i"
+  requireEnv "$user_var" "$authorized_keys_var"
+  user="${!user_var}"
+  authorized_keys="${!authorized_keys_var}"
+
+  echo "configuring user $user"
+
+  if ! id -u "$user" &>/dev/null; then
+    useradd "$user"
+  fi
+
+  user_home=$(homeDir "$user")
+
+  mkdir -p "$user_home/.ssh"
+  echo "$authorized_keys" > "$user_home/.ssh/authorized_keys"
+done
 
 reboot

@@ -4,20 +4,77 @@ set -e
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$BASEDIR/.."
 
+source "setup/lib/bash_include"
+
 if [[ -f .env ]]; then
   source .env
 fi
 
-SERVER_USER="$(if [[ "$SERVER_USER" ]]; then echo "$SERVER_USER"; else echo "$USER"; fi)"
+SEND_ENV=(HOST USER_ROOT AUTHORIZED_KEYS_ROOT USER_COUNT)
 
-if [ "$(git branch | grep '*')" != "* master" ] ; then
+for ((i=1; i <= USER_COUNT; i++ )); do
+  SEND_ENV+=(USER_$i AUTHORIZED_KEYS_$i WEECHAT_PASSWORD_$i WEECHAT_PORT_$i)
+done
+
+requireEnv "${SEND_ENV[@]}"
+
+if [ "$(git branch | grep '\\*')" != "* master" ] ; then
   read -p 'You are not on master, are you sure you want to deploy? (y/n) ' -r REPLY
-  if [ ! $REPLY = 'y' ]; then
+  if [ ! "$REPLY" = 'y' ]; then
     exit 1
   fi
 fi
 
 echo "syncing files"
-rsync -R `git ls-files setup` "$SERVER_USER@$HOST":.
+rsync -R $(git ls-files setup) "$USER_ROOT@$HOST":.
 
-LC_AUTHORIZED_KEYS="$AUTHORIZED_KEYS" ssh -o SendEnv=LC_AUTHORIZED_KEYS "$SERVER_USER@$HOST" "chmod +x ./setup/setup && ./setup/setup"
+function runScript
+{
+  run="chmod +x setup/bin/$1 && setup/bin/$1"
+  set_env=()
+  send_env=()
+
+  for var in "${SEND_ENV[@]}"; do
+    lc_var="LC_$var"
+    set_env+=("$lc_var=${!var}")
+    send_env+=("$lc_var")
+  done
+
+  send_env_list="$(IFS=','; echo "${send_env[*]}")"
+  env "${set_env[@]}" ssh -o SendEnv="$send_env_list" "$USER_ROOT@$HOST" "$run"
+}
+
+function waitForServer
+{
+  while ! nc -z "$HOST" 22 >/dev/null; do
+    sleep 1
+    echo "waiting for server to reboot..."
+  done
+}
+
+if [[ "$#" -eq 0 ]]; then
+  SCRIPTS=(initial weechat cleanup)
+else
+  SCRIPTS=("$@")
+fi
+
+for script in "${SCRIPTS[@]}"; do
+  if [[ "$script" == 'weechat' ]]; then
+    runScript setup_weechat
+  elif [[ "$script" == 'initial' ]]; then
+    runScript setup_initial
+    for i in {1..10}; do
+      if ! nc -z "$HOST" 22 >/dev/null; then
+        break
+      fi
+      echo "waiting for server to shutdown"
+      sleep 1
+    done
+  elif [[ "$script" == 'cleanup' ]]; then
+    runScript cleanup
+  else
+    echo "unknown script $script" >&2
+    exit 1
+  fi
+  waitForServer
+done

@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+function requireEnv
+{
+  PASS=true
+  for var in "$@"; do
+    if [[ ! "${!var}" ]]; then
+      echo "missing environment variable $var" >&2
+      PASS=false
+    fi
+  done
+  if [[ $PASS != true ]]; then
+    exit 1
+  fi
+}
+
+function homeDir
+{
+  echo "$(getent passwd "$1" | cut -d: -f6)"
+}
