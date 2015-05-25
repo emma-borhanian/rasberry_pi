@@ -18,6 +18,10 @@
     ```
 3. run `./bin/setup`
 
+# Dependencies
+
+* on Mac OS, need a better xpath implementation, see https://github.com/concept-not-found/homebrew-tap
+
 # Reference
 
 * http://oleaass.com/installing-configuring-and-hardening-weechat-on-linux/

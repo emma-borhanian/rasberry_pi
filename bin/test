@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$BASEDIR/.."
+
+source "setup/lib/bash_include"
+
+if [[ -f .env ]]; then
+  source .env
+fi
+
+requireEnv USER_ROOT HOST
+
+PORT_ID_XPATH="/nmaprun/host/ports/port[./state/@state!='filtered']/@portid"
+
+user_ports=()
+for ((i=1; i <= USER_COUNT; i++ )); do
+  weechat_port_var="WEECHAT_PORT_$i"
+  requireEnv "$weechat_port_var"
+  user_ports+=("${!weechat_port_var}")
+done
+
+echo "checking open ports..."
+open_ports=($(nmap "$HOST" -Pn -oX - | xpath -q -e "$PORT_ID_XPATH"))
+
+# weechat ports
+user_ports_list=$(IFS=','; echo "${user_ports[*]}")
+open_ports+=($(nmap "$HOST" -Pn -oX - -p "8000-8010" | xpath -q -e "$PORT_ID_XPATH"))
+open_ports+=($(nmap "$HOST" -Pn -oX - -p "$user_ports_list" | xpath -q -e "$PORT_ID_XPATH"))
+
+# change output from portid="22" to just 22
+open_ports=($(sed -E s/portid=\|\"//g <<< "${open_ports[*]}"))
+
+if [[ "${open_ports[*]}" != "22" ]]; then
+  echo "FAIL: too many ports not filtered by firewall: ${open_ports[*]}"
+  exit 1
+else
+  echo "PASS: only port 22 open"
+fi
