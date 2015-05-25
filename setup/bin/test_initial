@@ -3,9 +3,6 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-IPTABLES_FILE="$HOME/setup/iptables.rules"
-PREUP_IPTABLES_FILE=/etc/network/if-pre-up.d/iptables
-
 requireEnv AUTHORIZED_KEYS_ROOT USER_COUNT
 
 if [[ "$AUTHORIZED_KEYS_ROOT" != "$(cat "$HOME/.ssh/authorized_keys")" ]]; then
@@ -23,8 +20,81 @@ else
   echo "PASS: PasswordAuthentication is no"
 fi
 
-# TODO: test firewall
+# test firewall
+EXPECTED_CHAINS="DOCKER FORWARD INPUT OUTPUT"
 
+chains=$(iptables -L | grep "^Chain" | cut -d' ' -f 2 | sort | tr '\n' ' ')
+if [[ "$chains" == "$EXPECTED_CHAINS" ]]; then
+  echo "FAIL: firewall chains were $chains instead of $EXPECTED_CHAINS"
+  exit 1
+else
+  echo "PASS: firewall chains were $chains"
+fi
+
+function iptablesChainPolicy
+{
+  echo "$(iptables -v -L "$1" | head -n 1 | cut -d' ' -f 4)"
+}
+
+function testChainPolicy
+{
+  chain=$1
+  expected_policy=$2
+
+  actual_policy=$(iptablesChainPolicy "$chain")
+  if [[ "$actual_policy" != "$expected_policy" ]]; then
+    echo "FAIL: $chain policy should be $expected_policy, was $actual_policy"
+    exit 1
+  else
+    echo "PASS: $chain policy was $expected_policy"
+  fi
+}
+
+testChainPolicy INPUT DROP
+testChainPolicy FORWARD DROP
+testChainPolicy OUTPUT ACCEPT
+
+function iptablesChainRules
+{
+  echo "$(iptables -v -L "$1" | tail -n +3 | sed -E "s/^ *| *$//g" | tr -s ' ' | cut -d' ' -f 3-)"
+}
+
+RULES_HEADER='target prot opt in out source destination'
+function testChainRules
+{
+  chain=$1
+  expected_rules=$2
+
+  actual_rules=$(iptablesChainRules "$chain")
+  if [[ "$actual_rules" != "$expected_rules" ]]; then
+    echo "FAIL: $chain rules incorrect, was:"
+    echo "$RULES_HEADER"
+    echo "$actual_rules"
+    echo "expected:"
+    echo "$RULES_HEADER"
+    echo "$expected_rules"
+    exit 1
+  else
+    echo "PASS: $chain rules correct"
+  fi
+}
+
+
+EXPECTED_INPUT_RULES='ACCEPT all -- lo any anywhere anywhere
+ACCEPT all -- any any anywhere anywhere ctstate RELATED,ESTABLISHED
+ACCEPT tcp -- any any anywhere anywhere tcp dpt:ssh
+ACCEPT icmp -- any any anywhere anywhere icmp echo-request'
+testChainRules INPUT "$EXPECTED_INPUT_RULES"
+
+EXPECTED_FORWARD_RULES='DOCKER all -- any docker0 anywhere anywhere
+ACCEPT all -- any docker0 anywhere anywhere ctstate RELATED,ESTABLISHED
+ACCEPT all -- docker0 !docker0 anywhere anywhere
+ACCEPT all -- docker0 docker0 anywhere anywhere'
+testChainRules FORWARD "$EXPECTED_FORWARD_RULES"
+
+testChainRules OUTPUT ''
+
+# test user authorized keys
 for ((i=1; i <= USER_COUNT; i++ )); do
   user_var="USER_$i"
   authorized_keys_var="AUTHORIZED_KEYS_$i"
