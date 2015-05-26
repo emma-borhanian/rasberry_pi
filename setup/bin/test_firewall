@@ -76,38 +76,4 @@ ACCEPT all -- docker0 !docker0 anywhere anywhere
 ACCEPT all -- docker0 docker0 anywhere anywhere'
 testChainRules FORWARD "$EXPECTED_FORWARD_RULES"
 
-expected_output_rules=()
-
-for ((i=1; i <= USER_COUNT; i++ )); do
-  user_var="USER_$i"
-  weechat_port_var="WEECHAT_PORT_$i"
-  requireEnv "$user_var" "$weechat_port_var"
-  user="${!user_var}"
-  weechat_port="${!weechat_port_var}"
-
-  expected_output_rules+=("DROP tcp -- any any anywhere anywhere ! owner UID match $user tcp dpt:$weechat_port")
-done
-
-testChainRules OUTPUT "$(IFS=$'\n'; echo "${expected_output_rules[*]}")"
-
-for ((i=1; i <= USER_COUNT; i++ )); do
-  user_var="USER_$i"
-  weechat_port_var="WEECHAT_PORT_$i"
-  requireEnv "$user_var" "$weechat_port_var"
-  user="${!user_var}"
-  weechat_port="${!weechat_port_var}"
-
-  for ((j=1; j <= USER_COUNT; j++)); do
-    if ((j==i)); then continue; fi
-    other_user_var="USER_$j"
-    requireEnv "$other_user_var"
-    other_user="${!other_user_var}"
-
-    if su "$other_user" -c "nc -w 2 -z localhost $weechat_port" > /dev/null; then
-      echo "FAIL: $other_user can listen to $user's weechat port"
-      exit 1
-    else
-      echo "PASS: $other_user cannnot listen to $user's weechat port"
-    fi
-  done
-done
+testChainRules OUTPUT ""
