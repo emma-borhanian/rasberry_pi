@@ -16,11 +16,16 @@
     WEECHAT_PORT_1=# weechat port for user 1
     ...
     ```
-3. run `./bin/setup`
+3. run `./bin/setup && ./bin/test`
 
 # Dependencies
 
 * on Mac OS, need a better xpath implementation, see https://github.com/concept-not-found/homebrew-tap
+
+* Maintenance
+
+* update image http://blog.hypriot.com/getting-started-with-docker-and-mac-on-the-raspberry-pi/
+* run `/bin/setup && ./bin/test` (idempotent)
 
 # Reference
 
