@@ -17,7 +17,7 @@ fi
 
 function iptablesChainPolicy
 {
-  echo "$(iptables -v -L "$1" | head -n 1 | cut -d' ' -f 4)"
+  iptables -v -L "$1" | head -n 1 | cut -d' ' -f 4
 }
 
 function testChainPolicy
@@ -40,7 +40,7 @@ testChainPolicy OUTPUT ACCEPT
 
 function iptablesChainRules
 {
-  echo "$(iptables -v -L "$1" | tail -n +3 | sed -E "s/^ *| *$//g" | tr -s ' ' | cut -d' ' -f 3-)"
+  iptables -v -L "$1" | tail -n +3 | sed -E "s/^ *| *$//g" | tr -s ' ' | cut -d' ' -f 3-
 }
 
 RULES_HEADER='target prot opt in out source destination'
