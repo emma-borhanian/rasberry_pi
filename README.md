@@ -25,6 +25,7 @@
 * Maintenance
 
 * update image http://blog.hypriot.com/getting-started-with-docker-and-mac-on-the-raspberry-pi/
+* update version numbers in `/setup/docker-weechat/Dockerfile`
 * run `/bin/setup && ./bin/test` (idempotent)
 
 # Reference
