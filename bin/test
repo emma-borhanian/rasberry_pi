@@ -61,18 +61,24 @@ function testAuthenticationMethods
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(initial weechat)
+  SCRIPTS=(ssh firewall dist weechat)
 else
   SCRIPTS=("$@")
 fi
 
 for script in "${SCRIPTS[@]}"; do
-  if [[ "$script" == 'initial' ]]; then
-    testPorts
+  if [[ "$script" == 'ssh' ]]; then
     testAuthenticationMethods
-    runScript test_initial
+    runScript test_ssh
+  elif [[ "$script" == 'firewall' ]]; then
+    testPorts
+    runScript test_firewall
+  elif [[ "$script" == 'dist' ]]; then
+    : # no tests
   elif [[ "$script" == 'weechat' ]]; then
     runScript test_weechat
+  elif [[ "$script" == 'cleanup' ]]; then
+    : # no tests
   else
     echo "unknown script $script" >&2
     exit 1

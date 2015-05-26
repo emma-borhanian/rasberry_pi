@@ -3,24 +3,6 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-requireEnv AUTHORIZED_KEYS_ROOT USER_COUNT
-
-if [[ "$AUTHORIZED_KEYS_ROOT" != "$(cat "$HOME/.ssh/authorized_keys")" ]]; then
-  echo "FAIL: root authorized keys incorrect"
-  exit 1
-else
-  echo "PASS: root authorized keys correct"
-fi
-
-if grep "PasswordAuthentication yes" /etc/ssh/sshd_config >/dev/null || \
-  ! grep "PasswordAuthentication no" /etc/ssh/sshd_config >/dev/null; then
-  echo "FAIL: PasswordAuthentication should be set to no"
-  exit 1
-else
-  echo "PASS: PasswordAuthentication is no"
-fi
-
-# test firewall
 EXPECTED_CHAINS="DOCKER FORWARD INPUT OUTPUT"
 
 chains=$(iptables -L | grep "^Chain" | cut -d' ' -f 2 | sort | tr '\n' ' ')
@@ -93,21 +75,3 @@ ACCEPT all -- docker0 docker0 anywhere anywhere'
 testChainRules FORWARD "$EXPECTED_FORWARD_RULES"
 
 testChainRules OUTPUT ''
-
-# test user authorized keys
-for ((i=1; i <= USER_COUNT; i++ )); do
-  user_var="USER_$i"
-  authorized_keys_var="AUTHORIZED_KEYS_$i"
-  requireEnv "$user_var" "$authorized_keys_var"
-  user="${!user_var}"
-  authorized_keys="${!authorized_keys_var}"
-
-  user_home=$(homeDir "$user")
-
-  if [[ "$authorized_keys" != "$(cat "$user_home/.ssh/authorized_keys")" ]]; then
-    echo "FAIL: user $user authorized keys incorrect"
-    exit 1
-  else
-    echo "PASS: user $user authorized keys correct"
-  fi
-done

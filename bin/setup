@@ -30,14 +30,19 @@ function waitForServer
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(initial weechat cleanup)
+  SCRIPTS=(ssh firewall dist weechat cleanup)
 else
   SCRIPTS=("$@")
 fi
 
 for script in "${SCRIPTS[@]}"; do
-  if [[ "$script" == 'initial' ]]; then
-    runScript setup_initial
+  if [[ "$script" == 'ssh' ]]; then
+    runScript setup_ssh
+  elif [[ "$script" == 'firewall' ]]; then
+    runScript setup_firewall
+  elif [[ "$script" == 'dist' ]]; then
+    runScript setup_dist
+    # wait for reboot
     for i in {1..10}; do
       if ! nc -z "$HOST" 22 >/dev/null; then
         break

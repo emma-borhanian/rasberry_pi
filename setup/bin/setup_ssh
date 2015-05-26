@@ -3,9 +3,6 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-IPTABLES_FILE="$HOME/setup/iptables.rules"
-PREUP_IPTABLES_FILE=/etc/network/if-pre-up.d/iptables
-
 function updateConfig
 {
   file="$1"
@@ -27,19 +24,6 @@ echo "$AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
 
 updateConfig /etc/ssh/sshd_config PasswordAuthentication no
 
-echo "configuring firewall"
-if [[ ! -f "$PREUP_IPTABLES_FILE" ]]; then
-  echo "#!/bin/sh" > "$PREUP_IPTABLES_FILE"
-fi
-chmod +x "$PREUP_IPTABLES_FILE"
-if ! grep "^iptables-restore < \"$IPTABLES_FILE\"$" "$PREUP_IPTABLES_FILE" > /dev/null; then
-  echo "iptables-restore < \"$IPTABLES_FILE\"" >> "$PREUP_IPTABLES_FILE"
-fi
-iptables-restore < "$IPTABLES_FILE"
-
-apt-get update
-apt-get dist-upgrade -y
-
 for ((i=1; i <= USER_COUNT; i++ )); do
   user_var="USER_$i"
   authorized_keys_var="AUTHORIZED_KEYS_$i"
@@ -58,5 +42,3 @@ for ((i=1; i <= USER_COUNT; i++ )); do
   mkdir -p "$user_home/.ssh"
   echo "$authorized_keys" > "$user_home/.ssh/authorized_keys"
 done
-
-reboot
