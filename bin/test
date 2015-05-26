@@ -67,6 +67,7 @@ else
 fi
 
 for script in "${SCRIPTS[@]}"; do
+  echo "testing $script..."
   if [[ "$script" == 'ssh' ]]; then
     testAuthenticationMethods
     runScript test_ssh
@@ -74,11 +75,11 @@ for script in "${SCRIPTS[@]}"; do
     testPorts
     runScript test_firewall
   elif [[ "$script" == 'dist' ]]; then
-    : # no tests
+    echo "no dist tests"
   elif [[ "$script" == 'weechat' ]]; then
     runScript test_weechat
   elif [[ "$script" == 'cleanup' ]]; then
-    : # no tests
+    echo "no cleanup tests"
   else
     echo "unknown script $script" >&2
     exit 1
