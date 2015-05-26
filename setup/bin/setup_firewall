@@ -7,11 +7,18 @@ IPTABLES_FILE="$HOME/setup/iptables.rules"
 PREUP_IPTABLES_FILE=/etc/network/if-pre-up.d/iptables
 
 echo "configuring firewall"
-if [[ ! -f "$PREUP_IPTABLES_FILE" ]]; then
-  echo "#!/bin/sh" > "$PREUP_IPTABLES_FILE"
-fi
+echo "#!/bin/sh" > "$PREUP_IPTABLES_FILE"
 chmod +x "$PREUP_IPTABLES_FILE"
-if ! grep "^iptables-restore < \"$IPTABLES_FILE\"$" "$PREUP_IPTABLES_FILE" > /dev/null; then
-  echo "iptables-restore < \"$IPTABLES_FILE\"" >> "$PREUP_IPTABLES_FILE"
-fi
-iptables-restore < "$IPTABLES_FILE"
+echo "iptables-restore < \"$IPTABLES_FILE\"" >> "$PREUP_IPTABLES_FILE"
+
+for ((i=1; i <= USER_COUNT; i++ )); do
+  user_var="USER_$i"
+  weechat_port_var="WEECHAT_PORT_$i"
+  requireEnv "$user_var" "$weechat_port_var"
+  user="${!user_var}"
+  weechat_port="${!weechat_port_var}"
+
+  echo "iptables -A OUTPUT -p tcp -m owner ! --uid-owner $user --dport $weechat_port -j DROP" >> "$PREUP_IPTABLES_FILE"
+done
+
+source "$PREUP_IPTABLES_FILE"
