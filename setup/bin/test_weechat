@@ -30,5 +30,12 @@ for ((i=1; i <= USER_COUNT; i++ )); do
   else
     echo "PASS: listening on localhost:$weechat_port"
   fi
+
+  if [[ ! -f "$user_home/.weechat/weechat.conf" ]]; then
+    echo "FAIL: does not exist: $user_home/.weechat/weechat.conf"
+    exit 1
+  else
+    echo "PASS: exists: $user_home/.weechat/weechat.conf"
+  fi
 done
 
