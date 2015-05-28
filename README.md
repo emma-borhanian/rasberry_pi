@@ -30,6 +30,7 @@
 
 # Reference
 
+* https://github.com/diogomonica/docker-bench-security
 * http://oleaass.com/installing-configuring-and-hardening-weechat-on-linux/
 * https://www.debian.org/doc/manuals/securing-debian-howto/index.en.html
 * http://www.shellcheck.net/
