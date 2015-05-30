@@ -1,5 +1,6 @@
 * https://github.com/diogomonica/docker-bench-security
 * limit weechat RAM usage
+* restart weechat on reboot
 * harden debian
 * harden weechat
 * setup backups
