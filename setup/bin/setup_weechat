@@ -35,7 +35,14 @@ for ((i=1; i <= USER_COUNT; i++ )); do
   # do things that need weechat stopped here
 
   echo "starting container $container_name..."
-  started=$(docker run --name "$container_name" -v "$user_home/.weechat:/.weechat" -e "WEECHAT_PASSWORD=$weechat_password" -p "127.0.0.1:$weechat_port:8001" -i -t -d local/weechat)
+  started=$(\
+    docker run \
+      --name "$container_name" \
+      -v "$user_home/.weechat:/.weechat" \
+      -e "WEECHAT_PASSWORD=$weechat_password" \
+      -p "127.0.0.1:$weechat_port:8001" \
+      -itd local/weechat
+  )
 
   if [[ $started ]]; then
     echo "started $container_name as $started"
