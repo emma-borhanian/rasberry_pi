@@ -1,5 +1,4 @@
 * https://github.com/diogomonica/docker-bench-security
-* restart weechat on reboot
 * harden debian
 * harden weechat
 * setup backups
