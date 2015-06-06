@@ -41,6 +41,7 @@ for ((i=1; i <= USER_COUNT; i++ )); do
       -v "$user_home/.weechat:/.weechat" \
       -e "WEECHAT_PASSWORD=$weechat_password" \
       -p "127.0.0.1:$weechat_port:8001" \
+      -m=300m \
       -itd local/weechat
   )
 
