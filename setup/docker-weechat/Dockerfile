@@ -14,8 +14,8 @@ RUN cpanm Encode~1.9801
 
 EXPOSE 8001
 
-ENV LANG en_US.UTF-8
-ENV TERM screen-256color
+ENV LANG C.UTF-8
+ENV TERM rxvt-unicode
 ENV HOME /
 ENV TZ US/Pacific
 
