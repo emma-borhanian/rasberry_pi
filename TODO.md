@@ -2,3 +2,4 @@
 * harden debian
 * harden weechat
 * setup backups
+* script to auto-bump Dockerfile packages
