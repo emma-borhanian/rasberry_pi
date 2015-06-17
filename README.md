@@ -1,4 +1,4 @@
-# Personal setup/maintenance scripts for rasberry pi
+# Personal setup/maintenance scripts for raspberry pi
 
 1. http://blog.hypriot.com/getting-started-with-docker-on-your-arm-device
 2. setup .env file:
