@@ -3,3 +3,4 @@
 * harden weechat
 * setup backups
 * script to auto-bump Dockerfile packages
+* set system timezone
