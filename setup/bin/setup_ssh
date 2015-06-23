@@ -23,6 +23,7 @@ mkdir -p "$HOME/.ssh"
 echo "$AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
 
 updateConfig /etc/ssh/sshd_config PasswordAuthentication no
+service ssh restart
 
 for ((i=1; i <= USER_COUNT; i++ )); do
   user_var="USER_$i"
