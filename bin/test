@@ -45,7 +45,7 @@ function testPorts
 function testAuthenticationMethods
 {
   authentication_methods=$(\
-    ssh -vvv root@192.168.1.115 exit 2>&1 | \
+    ssh -vvv "$USER_ROOT@$HOST" exit 2>&1 | \
     tr -d '\r' | \
     grep "Authentications that can continue" | \
     sed "s/.*Authentications that can continue: //g" | \
