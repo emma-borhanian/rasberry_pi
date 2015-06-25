@@ -25,6 +25,8 @@ echo "$AUTHORIZED_KEYS_ROOT" > "$HOME/.ssh/authorized_keys"
 updateConfig /etc/ssh/sshd_config PasswordAuthentication no
 service ssh restart
 
+passwd --lock "$USER_ROOT"
+
 for ((i=1; i <= USER_COUNT; i++ )); do
   user_var="USER_$i"
   authorized_keys_var="AUTHORIZED_KEYS_$i"

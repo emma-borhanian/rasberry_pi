@@ -20,6 +20,14 @@ else
   echo "PASS: PasswordAuthentication is no"
 fi
 
+if [[ "L" != "$(passwd --status "$USER_ROOT" | cut -d' ' -f2)" ]]; then
+  echo "FAIL: root password is not locked"
+  exit 1
+else
+  echo "PASS: root password is locked"
+fi
+
+
 # test user authorized keys
 for ((i=1; i <= USER_COUNT; i++ )); do
   user_var="USER_$i"
