@@ -6,15 +6,23 @@ source "$HOME/setup/lib/bash_include"
 requireEnv USER_COUNT
 
 for ((i=1; i <= USER_COUNT; i++ )); do
-  user_var="USER_$i"
+  weechat_password_var="WEECHAT_PASSWORD_$i"
   weechat_port_var="WEECHAT_PORT_$i"
-  requireEnv "$user_var" "$weechat_port_var"
-  user="${!user_var}"
+  container_name_var="WEECHAT_CONTAINER_NAME_$i"
+  requireEnv "$weechat_password_var" "$weechat_port_var" "$container_name_var"
+  weechat_password="${!weechat_password_var}"
   weechat_port="${!weechat_port_var}"
+  container_name="${!container_name_var}"
 
-  user_home=$(homeDir "$user")
+  directory="/container_files/$container_name"
 
-  container_name="${user}_weechat"
+  directory_permissions=$(ls -ld "$directory" | cut -d' ' -f1)
+  if [[ "$directory_permissions" != "drw-------" ]]; then
+    echo "FAIL: $directory permissions are $directory_permissions, should be drw-------"
+    exit 1
+  else
+    echo "PASS: $directory permissions are $directory_permissions"
+  fi
 
   running=$(docker ps -a -q -f name="$container_name")
   if [[ ! "$running" ]]; then
@@ -25,17 +33,17 @@ for ((i=1; i <= USER_COUNT; i++ )); do
   fi
 
   if ! su "$user" -c "nc -w 2 -z localhost $weechat_port" >/dev/null; then
-    echo "FAIL: not listening on localhost:$weechat_port for user $user"
+    echo "FAIL: not listening on localhost:$weechat_port"
     exit 1
   else
-    echo "PASS: listening on localhost:$weechat_port for user $user"
+    echo "PASS: listening on localhost:$weechat_port"
   fi
 
-  if [[ ! -f "$user_home/.weechat/weechat.conf" ]]; then
-    echo "FAIL: does not exist: $user_home/.weechat/weechat.conf"
+  if [[ ! -f "$directory/.weechat/weechat.conf" ]]; then
+    echo "FAIL: does not exist: $directory/.weechat/weechat.conf"
     exit 1
   else
-    echo "PASS: exists: $user_home/.weechat/weechat.conf"
+    echo "PASS: exists: $directory/.weechat/weechat.conf"
   fi
 done
 

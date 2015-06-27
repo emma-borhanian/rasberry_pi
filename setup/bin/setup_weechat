@@ -3,22 +3,25 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-requireEnv USER_COUNT
+requireEnv WEECHAT_COUNT
 
-docker build -t local/weechat "$HOME/setup/docker-weechat"
+if ((WEECHAT_COUNT > 0)); then
+  docker build -t local/weechat "$HOME/setup/docker-weechat"
+fi
 
-for ((i=1; i <= USER_COUNT; i++ )); do
-  user_var="USER_$i"
+for ((i=1; i <= WEECHAT_COUNT; i++ )); do
   weechat_password_var="WEECHAT_PASSWORD_$i"
   weechat_port_var="WEECHAT_PORT_$i"
-  requireEnv "$user_var" "$weechat_password_var" "$weechat_port_var"
-  user="${!user_var}"
+  container_name_var="WEECHAT_CONTAINER_NAME_$i"
+  requireEnv "$weechat_password_var" "$weechat_port_var" "$container_name_var"
   weechat_password="${!weechat_password_var}"
   weechat_port="${!weechat_port_var}"
+  container_name="${!container_name_var}"
 
-  user_home=$(homeDir "$user")
+  directory="/container_files/$container_name"
 
-  container_name="${user}_weechat"
+  mkdir -p "$directory"
+  chmod 600 "$directory"
 
   running=$(docker ps -a -q -f name="$container_name")
   if [[ "$running" ]]; then
@@ -38,7 +41,7 @@ for ((i=1; i <= USER_COUNT; i++ )); do
   started=$(\
     docker run \
       --name "$container_name" \
-      -v "$user_home/.weechat:/.weechat" \
+      -v "$directory/.weechat:/.weechat" \
       -e "WEECHAT_PASSWORD=$weechat_password" \
       -p "127.0.0.1:$weechat_port:8001" \
       -m=300m \
