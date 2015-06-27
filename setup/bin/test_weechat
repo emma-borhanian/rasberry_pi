@@ -32,7 +32,7 @@ for ((i=1; i <= USER_COUNT; i++ )); do
     echo "PASS: container $container_name running"
   fi
 
-  if ! su "$user" -c "nc -w 2 -z localhost $weechat_port" >/dev/null; then
+  if ! nc -w 2 -z localhost $weechat_port >/dev/null; then
     echo "FAIL: not listening on localhost:$weechat_port"
     exit 1
   else
