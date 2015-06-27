@@ -16,20 +16,22 @@ PORT_ID_XPATH="/nmaprun/host/ports/port[./state/@state!='filtered']/@portid"
 
 function testPorts
 {
-  user_ports=()
-  for ((i=1; i <= USER_COUNT; i++ )); do
-    weechat_port_var="WEECHAT_PORT_$i"
-    requireEnv "$weechat_port_var"
-    user_ports+=("${!weechat_port_var}")
-  done
-
   echo "checking open ports..."
   open_ports=($(nmap "$HOST" -Pn -oX - | xpath -q -e "$PORT_ID_XPATH"))
 
   # weechat ports
-  user_ports_list=$(IFS=','; echo "${user_ports[*]}")
   open_ports+=($(nmap "$HOST" -Pn -oX - -p "8000-8010" | xpath -q -e "$PORT_ID_XPATH"))
-  open_ports+=($(nmap "$HOST" -Pn -oX - -p "$user_ports_list" | xpath -q -e "$PORT_ID_XPATH"))
+
+  if ((WEECHAT_COUNT > 0)); then
+    weechat_ports=()
+    for ((i=1; i <= WEECHAT_COUNT; i++ )); do
+      weechat_port_var="WEECHAT_PORT_$i"
+      requireEnv "$weechat_port_var"
+      weechat_ports+=("${!weechat_port_var}")
+    done
+    weechat_ports_list=$(IFS=','; echo "${weechat_ports[*]}")
+    open_ports+=($(nmap "$HOST" -Pn -oX - -p "$weechat_ports_list" | xpath -q -e "$PORT_ID_XPATH"))
+  fi
 
   # change output from portid="22" to just 22
   open_ports=($(sed -E s/portid=\|\"//g <<< "${open_ports[*]}"))
