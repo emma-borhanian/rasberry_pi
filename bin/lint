@@ -10,4 +10,4 @@ if [[ -f .env ]]; then
   source .env
 fi
 
-shellcheck bin/* setup/bin/*
+shellcheck bin/* lib/* setup/bin/* setup/lib/*
