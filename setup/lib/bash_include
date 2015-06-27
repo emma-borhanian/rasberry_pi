@@ -17,5 +17,5 @@ function requireEnv
 
 function homeDir
 {
-  echo "$(getent passwd "$1" | cut -d: -f6)"
+  getent passwd "$1" | cut -d: -f6
 }
