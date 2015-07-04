@@ -19,4 +19,8 @@ ENV TERM rxvt-unicode
 ENV HOME /
 ENV TZ US/Pacific
 
-CMD weechat -r "/set relay.network.password \"$WEECHAT_PASSWORD\";/set logger.file.mask \"\$plugin.\$name.log\";/relay add weechat 8001"
+CMD weechat -r "\
+/set relay.network.password \"$WEECHAT_PASSWORD\";\
+/set logger.file.mask \"\$plugin.\$name.log\";\
+/relay add weechat 8001;\
+"
