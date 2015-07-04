@@ -63,7 +63,7 @@ function testAuthenticationMethods
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(ssh firewall dist weechat)
+  SCRIPTS=(ssh firewall dist weechat cleanup)
 else
   SCRIPTS=("$@")
 fi
