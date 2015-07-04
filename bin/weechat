@@ -15,4 +15,4 @@ if [[ ! "$1" ]]; then
   exit 1
 fi
 
-autossh -M 0 -t "$USER_ROOT@$HOST" "docker attach $1"
+autossh -M 0 -t -a "$USER_ROOT@$HOST" "docker attach $1"
