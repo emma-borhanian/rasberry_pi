@@ -4,7 +4,7 @@ set -e
 source "$HOME/setup/lib/bash_include"
 
 # remove stopped containers
-stopped=$(docker ps -a -q -f status=exited)
+stopped=$(docker ps -a -q -f status=exited -f status=dead)
 if [[ "$stopped" ]]; then
   echo "removing stopped containers $stopped"
   docker rm $stopped > /dev/null
@@ -14,5 +14,6 @@ fi
 dangling=$(docker images -q -f dangling=true)
 if [[ "$dangling" ]]; then
   echo "removing dangling images $dangling"
-  docker rmi $dangling > /dev/null
+  # sometimes fails because they're not really dangling?
+  docker rmi $dangling > /dev/null || true
 fi
