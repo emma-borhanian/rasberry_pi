@@ -26,13 +26,13 @@ for ((i=1; i <= WEECHAT_COUNT; i++ )); do
   running=$(docker ps -a -q -f name="$container_name")
   if [[ "$running" ]]; then
     echo "stopping container $container_name: $running"
-    docker stop "$container_name" > /dev/null
+    docker stop "$container_name" > /dev/null || true
   fi
 
   stopped=$(docker ps -a -q -f status=exited -f name="$container_name")
   if [[ "$stopped" ]]; then
     echo "removing container $container_name: $stopped"
-    docker rm "$stopped" > /dev/null
+    docker rm "$stopped" > /dev/null || true
   fi
 
   # do things that need weechat stopped here
