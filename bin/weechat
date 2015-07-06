@@ -15,8 +15,4 @@ if [[ ! "$1" ]]; then
   exit 1
 fi
 
-
-while true; do
-  ssh -t -a "$USER_ROOT@$HOST" "docker attach $1" || true
-  sleep 1
-done
+autossh -M 0 -t -a "$USER_ROOT@$HOST" "docker attach $1"
