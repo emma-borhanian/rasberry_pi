@@ -30,7 +30,7 @@ function waitForServer
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(ssh firewall dist weechat cleanup)
+  SCRIPTS=(ssh firewall dist dependencies weechat cleanup)
 else
   SCRIPTS=("$@")
 fi
@@ -50,6 +50,8 @@ for script in "${SCRIPTS[@]}"; do
       echo "waiting for server to shutdown"
       sleep 1
     done
+  elif [[ "$script" == 'dependencies' ]]; then
+    runScript setup_dependencies
   elif [[ "$script" == 'weechat' ]]; then
     runScript setup_weechat
   elif [[ "$script" == 'cleanup' ]]; then

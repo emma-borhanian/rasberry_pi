@@ -63,7 +63,7 @@ function testAuthenticationMethods
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
-  SCRIPTS=(ssh firewall dist weechat cleanup)
+  SCRIPTS=(ssh firewall dist dependencies weechat cleanup)
 else
   SCRIPTS=("$@")
 fi
@@ -78,6 +78,8 @@ for script in "${SCRIPTS[@]}"; do
     runScript test_firewall
   elif [[ "$script" == 'dist' ]]; then
     echo "no dist tests"
+  elif [[ "$script" == 'dependencies' ]]; then
+    echo "no dependencies tests"
   elif [[ "$script" == 'weechat' ]]; then
     runScript test_weechat
   elif [[ "$script" == 'cleanup' ]]; then

@@ -23,4 +23,6 @@ CMD weechat -r "\
 /set relay.network.password \"$WEECHAT_PASSWORD\";\
 /set logger.file.mask \"\$plugin.\$name.log\";\
 /relay add weechat 8001;\
+/script install socket_notify.rb;\
+/script autoload socket_notify.rb;\
 "
