@@ -28,7 +28,7 @@
     brew install xpath
     ```
 * `brew install shellcheck` for lint
-* for `bin/weechat`, `brew install autossh terminal-notifier`
+* for `bin/weechat`, `brew install terminal-notifier`
 
 # Maintenance
 

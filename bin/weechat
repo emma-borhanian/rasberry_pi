@@ -21,6 +21,13 @@ container_name=$1
 directory="/container_files/$container_name"
 socket="$directory/tmp/weechat.notify.sock"
 
+function sshloop {
+  while true; do
+    ssh "$@"
+    sleep 1
+  done
+}
+
 function darwinNotify {
   while read -r notification; do
     notification_parts=($notification)
@@ -33,7 +40,7 @@ function darwinNotify {
       -activate "$NOTIFICATION_BUNDLE_IDENTIFIER" \
       -sender "$NOTIFICATION_BUNDLE_IDENTIFIER"
   # docker seems to create the socket as a directory
-  done < <(autossh -M 0 -a "$USER_ROOT@$HOST" "while true; do rm -r $(printf %q "$socket") &> /dev/null; socket -s $(printf %q "$socket"); done")
+  done < <(sshloop "$USER_ROOT@$HOST" "while true; do rm -r $(printf %q "$socket") &> /dev/null; socket -s $(printf %q "$socket"); done")
 }
 
 # kill background process on exit
@@ -43,4 +50,4 @@ if [[ "$(uname)" = "Darwin" ]]; then
   darwinNotify &
 fi
 
-autossh -M 0 -t -a "$USER_ROOT@$HOST" "docker attach $1"
+sshloop -t "$USER_ROOT@$HOST" "screen -q -U -x -R -S weechat bash -c 'docker attach $1'"

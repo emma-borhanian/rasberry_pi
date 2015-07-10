@@ -3,4 +3,4 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
-apt-get install -y socket
+apt-get install -y socket screen
