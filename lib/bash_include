@@ -5,6 +5,8 @@ source "setup/lib/bash_include"
 
 function rsyncFiles
 {
-  echo "syncing files"
+  echo "syncing setup files"
   rsync -R $(git ls-files setup) "$USER_ROOT@$HOST":.
+  echo "syncing dotfiles"
+  (cd dotfiles && rsync -R $(git ls-files .) "$USER_ROOT@$HOST":.)
 }
