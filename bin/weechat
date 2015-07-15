@@ -23,7 +23,7 @@ socket="$directory/tmp/weechat.notify.sock"
 
 function sshloop {
   while true; do
-    ssh "$@"
+    ssh "$@" || true
     sleep 1
   done
 }
