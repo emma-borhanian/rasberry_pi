@@ -44,10 +44,10 @@ for script in "${SCRIPTS[@]}"; do
     runScript setup_dist
     # wait for reboot
     for i in {1..10}; do
+      echo "waiting for server to shutdown..."
       if ! nc -z "$HOST" 22 >/dev/null; then
         break
       fi
-      echo "waiting for server to shutdown"
       sleep 1
     done
   elif [[ "$script" == 'dependencies' ]]; then

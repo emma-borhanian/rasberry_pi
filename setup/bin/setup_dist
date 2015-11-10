@@ -3,8 +3,12 @@ set -e
 
 source "$HOME/setup/lib/bash_include"
 
+echo "upgrading packages..."
 apt-get update
 apt-get upgrade -y
+
+echo "upgrading dist..."
 apt-get dist-upgrade -y
 
+echo "rebooting..."
 reboot
