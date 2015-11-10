@@ -19,14 +19,6 @@ if [ "$(git branch | grep "\\*")" != "* master" ] ; then
   fi
 fi
 
-function waitForServer
-{
-  while ! nc -z "$HOST" 22 >/dev/null; do
-    sleep 1
-    echo "waiting for server to reboot..."
-  done
-}
-
 rsyncFiles
 
 if [[ "$#" -eq 0 ]]; then
@@ -42,14 +34,6 @@ for script in "${SCRIPTS[@]}"; do
     runScript setup_firewall
   elif [[ "$script" == 'dist' ]]; then
     runScript setup_dist
-    # wait for reboot
-    for i in {1..10}; do
-      echo "waiting for server to shutdown..."
-      if ! nc -z "$HOST" 22 >/dev/null; then
-        break
-      fi
-      sleep 1
-    done
   elif [[ "$script" == 'dependencies' ]]; then
     runScript setup_dependencies
   elif [[ "$script" == 'weechat' ]]; then
@@ -60,5 +44,4 @@ for script in "${SCRIPTS[@]}"; do
     echo "unknown script $script" >&2
     exit 1
   fi
-  waitForServer
 done

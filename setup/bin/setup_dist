@@ -9,6 +9,3 @@ apt-get upgrade -y
 
 echo "upgrading dist..."
 apt-get dist-upgrade -y
-
-echo "rebooting..."
-reboot
