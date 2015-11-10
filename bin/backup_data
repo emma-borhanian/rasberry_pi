@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$BASEDIR/.."
+
+source "lib/bash_include"
+
+if [[ -f .env ]]; then
+  source .env
+fi
+
+requireEnv USER_ROOT HOST
+
+LOCAL_DIRECTORY=$HOME/.raspberry_pi/backups/$HOST
+mkdir -p "$LOCAL_DIRECTORY"
+
+rsync --chmod=ugo=rwX --compress --verbose --checksum --recursive --links --times --progress "$USER_ROOT@$HOST:/container_files" "$LOCAL_DIRECTORY"
